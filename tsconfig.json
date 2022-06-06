@@ -1,0 +1,17 @@
+{
+  "files": [
+    "src/pdf-exporter.ts"
+  ],
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./cache/tsconfig.tsbuildinfo",
+    // "diagnostics": true,
+    "outDir": "./dist",
+    "target": "ES5",
+    "module": "umd",                     /* module: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "declaration": true,                 /* Generates corresponding '.d.ts' file. */
+    "strict": true,
+    "removeComments": true,
+    "moduleResolution": "node"
+  }
+}

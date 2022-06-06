@@ -1,9 +1,10 @@
 {
   "name": "pdf-exporter",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A JavaScript tool to generate PDF files from DOM elements",
   "main": "dist/pdf-exporter.js",
   "scripts": {
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -24,5 +25,10 @@
   },
   "homepage": "https://github.com/DiracKeeko/pdf-exporter#readme",
   "devDependencies": {
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1"
   }
 }
