@@ -1,0 +1,28 @@
+{
+  "name": "pdf-exporter",
+  "version": "1.0.0",
+  "description": "A JavaScript tool to generate PDF files from DOM elements",
+  "main": "dist/pdf-exporter.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DiracKeeko/pdf-exporter.git"
+  },
+  "keywords": [
+    "pdf",
+    "exporter",
+    "single-page",
+    "multiple-page",
+    "js",
+    "front-end"
+  ],
+  "author": "DiracKeeko",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/DiracKeeko/pdf-exporter/issues"
+  },
+  "homepage": "https://github.com/DiracKeeko/pdf-exporter#readme",
+  "devDependencies": {
+  }
+}
