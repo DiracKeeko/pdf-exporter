@@ -1,4 +1,5 @@
 import html2Canvas from "html2canvas";
+import JsPDF from "jspdf";
 
 interface Html2CanvasOption {
   allowTaint: boolean;
@@ -42,17 +43,21 @@ function createPageHeader(rootWidth: number, pageNum: number): HTMLElement {
   return div;
 }
 
-export default class {
-  A4Container: HTMLElement | undefined;
+function cloneNode<T extends Node>(node: T, isDeep: boolean = true) {
+  return <T>node.cloneNode(isDeep);
+}
+
+class PreWorker {
+  A4Container: HTMLElement = document.createElement("div");
   rootElement: HTMLElement;
   rootWidth: number;
   pageNum: number;
-  loadedPromise: never[];
-  remainderHeight: number | undefined;
-  
+  loadedPromise: Promise<any>[];
+  remainderHeight: number = 0;
+
   constructor(rootElement: HTMLElement) {
     if (!rootElement) {
-      throw new Error("missing root element");
+      throw new Error("root element lack!");
     }
     this.rootElement = rootElement;
     this.rootWidth = getElementAttrSize(rootElement, "width") || 0;
@@ -70,7 +75,7 @@ export default class {
 
     this.A4Container.appendChild(pageHeader);
 
-    this.remainderHeight = A4Height - this.getElementInA4Height(50);
+    this.remainderHeight = A4Height - this.calcElementInA4PageHeight(50);
 
     this.insertContainerToRootElement();
   }
@@ -87,9 +92,58 @@ export default class {
     }
   }
 
-  getElementInA4Height(elementHeight: number) {
+  calcElementInA4PageHeight(elementHeight: number) {
     if (!elementHeight) return 0;
     return (A4Width / this.rootWidth) * elementHeight;
   }
 
+  insertElementToContainer(element: HTMLElement) {
+    if (!element) return;
+    const elementHeight = this.calcElementInA4PageHeight(getElementAttrSize(element, "height"));
+
+    if (this.remainderHeight < elementHeight) {
+      this.loadedPromise.push(html2Canvas(this.A4Container, html2CanvasDefaultOption));
+      this.pageNum += 1;
+      this.initA4Container();
+    }
+    this.remainderHeight -= elementHeight;
+    const cloneElement = cloneNode(element, true);
+    cloneElement.style.margin = "0";
+    this.A4Container.appendChild(cloneElement);
+  }
+
+  finishInsertElementToContainer() {
+    const { children } = this.A4Container || {};
+    if (Object.keys(children).length !== 0) { 
+      this.loadedPromise.push(html2Canvas(this.A4Container, html2CanvasDefaultOption));
+      this.removeContainerToRootElement();
+    }
+    return this.loadedPromise;
+  }
+
 }
+
+function getMultiPagePdf(title: string, rootElement: HTMLElement, skeletonArr: Array<string>) {
+  const exporter: any = new PreWorker(rootElement);
+  skeletonArr.forEach(domId => {
+    const componentElement = rootElement.querySelector(`#${domId}`);
+    exporter.insertElementToContainer(componentElement);
+  })
+  
+  return Promise.all(exporter.finishInsertElementToContainer()).then((canvas: Array<any>) => {
+    const pdf = new JsPDF("p", "pt", "a4", true);
+    for (let i = 0; i < canvas.length; i++) {
+      const contentWidth = canvas[i].width;
+      const contentHeight = canvas[i].height;
+      const imgHeight = (A4Width / contentWidth) * contentHeight;
+      const pageData = canvas[i].toDataURL("image/jpeg", 1.0);
+      pdf.addImage(pageData, "jpeg", 0, 0, A4Width, imgHeight, undefined, "SLOW");
+      if (i < canvas.length - 1) {
+        pdf.addPage();
+      }
+    }
+    return pdf.save(`${title}.pdf`);
+  });
+}
+
+export { getMultiPagePdf }
