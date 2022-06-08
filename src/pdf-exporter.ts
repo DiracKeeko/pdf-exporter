@@ -146,4 +146,4 @@ function getMultiPagePdf(title: string, rootElement: HTMLElement, skeletonArr: A
   });
 }
 
-export { getMultiPagePdf }
+export default { getMultiPagePdf }

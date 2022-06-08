@@ -1,3 +1,6 @@
 import JsPDF from "jspdf";
 declare function getMultiPagePdf(title: string, rootElement: HTMLElement, skeletonArr: Array<string>): Promise<JsPDF>;
-export { getMultiPagePdf };
+declare const _default: {
+    getMultiPagePdf: typeof getMultiPagePdf;
+};
+export default _default;
