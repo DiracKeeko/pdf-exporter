@@ -1,12 +1,8 @@
 {
   "name": "pdf-exporter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A JavaScript tool to generate PDF files from DOM elements",
-  "main": "dist/pdf-exporter.js",
-  "scripts": {
-    "dev": "rollup -c",
-    "build": "rollup -c --environment NODE_ENV:production && rollup -c"
-  },
+  "main": "src/pdfExporter.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DiracKeeko/pdf-exporter.git"
@@ -25,15 +21,6 @@
     "url": "https://github.com/DiracKeeko/pdf-exporter/issues"
   },
   "homepage": "https://github.com/DiracKeeko/pdf-exporter#readme",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^22.0.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "^8.3.2",
-    "rollup": "^2.75.6",
-    "rollup-plugin-terser": "^7.0.2",
-    "tslib": "^2.4.0",
-    "typescript": "^4.7.3"
-  },
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1"
