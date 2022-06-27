@@ -1,15 +1,7 @@
 import html2Canvas from "html2canvas";
 import JsPDF from "jspdf";
 
-interface Html2CanvasOption {
-  allowTaint: boolean;
-  taintTest: boolean;
-  useCORS: boolean;
-  scale: number;
-  logging: boolean;
-}
-
-const html2CanvasDefaultOption: Html2CanvasOption = {
+const html2CanvasDefaultOption = {
   allowTaint: true,
   taintTest: false,
   useCORS: true,
@@ -17,15 +9,70 @@ const html2CanvasDefaultOption: Html2CanvasOption = {
   logging: false
 }
 
-// A4 size
-const A4Width:number = 592.28;
-const A4Height:number = 841.89;
-
-function getElementAttrSize(element: HTMLElement , attr: string): number {
-  return parseInt((window as any).getComputedStyle(element)[attr], 10);
+// ##getSinglePagePdf
+function getSinglePagePdf(title, element, scrollYNum) {
+  const maxCanvasHeight = 3000;
+  const canvasScale = 2;
+  const promise = [];
+  const { scrollHeight } = element;
+  const bufferHeight = 20;
+  const eleRect = element.getBoundingClientRect();
+  const scrollY = -scrollYNum || -eleRect.top;
+  if (scrollHeight > maxCanvasHeight) {
+    const size = Math.ceil(scrollHeight / maxCanvasHeight);
+    for (let i = 0; i < size; i++) {
+      promise.push(
+        html2Canvas(element, {
+          ...html2CanvasDefaultOption,
+          y: i * maxCanvasHeight,
+          scrollY,
+          height:
+            scrollHeight - i * maxCanvasHeight < maxCanvasHeight
+              ? scrollHeight - i * maxCanvasHeight + bufferHeight
+              : maxCanvasHeight
+        })
+      );
+    }
+  } else {
+    promise.push(
+      html2Canvas(element, {
+        ...html2CanvasDefaultOption,
+        y: 0,
+        scrollY
+      })
+    );
+  }
+  return Promise.all(promise).then(canvas => {
+    const { scrollWidth } = element;
+    let pageSizeArr = [];
+    if (scrollWidth <= scrollHeight) {
+      pageSizeArr = [scrollWidth, scrollHeight + bufferHeight];
+    } else {
+      pageSizeArr = [scrollWidth, 1.4 * scrollWidth];
+    }
+    const pdf = new JsPDF("", "pt", pageSizeArr);
+    let totalHeight = 0;
+    for (let i = 0; i < canvas.length; i++) {
+      const contentWidth = canvas[i].width / canvasScale;
+      const contentHeight = canvas[i].height / canvasScale;
+      const pageData = canvas[i].toDataURL("image/jpeg", 1.0);
+      pdf.addImage(pageData, "jpeg", 0, totalHeight, contentWidth, contentHeight);
+      totalHeight += contentHeight;
+    }
+    return pdf.save(`${title}.pdf`);
+  });
 }
 
-function createPageHeader(rootWidth: number, pageNum: number): HTMLElement {
+// ##getMultiPagePdf
+// A4 paper size
+const A4Width = 592.28;
+const A4Height = 841.89;
+
+function getElementAttrSize(element , attr) {
+  return parseInt(window.getComputedStyle(element)[attr], 10);
+}
+
+function createPageHeader(rootWidth, pageNum) {
   const div = document.createElement("div");
   div.style.width = `${rootWidth}px`;
   div.style.height = `30px`;
@@ -43,19 +90,9 @@ function createPageHeader(rootWidth: number, pageNum: number): HTMLElement {
   return div;
 }
 
-function cloneNode<T extends Node>(node: T, isDeep: boolean = true) {
-  return <T>node.cloneNode(isDeep);
-}
 
 class PreWorker {
-  A4Container: HTMLElement = document.createElement("div");
-  rootElement: HTMLElement;
-  rootWidth: number;
-  pageNum: number;
-  loadedPromise: Promise<any>[];
-  remainderHeight: number = 0;
-
-  constructor(rootElement: HTMLElement) {
+  constructor(rootElement) {
     if (!rootElement) {
       throw new Error("root element lack!");
     }
@@ -92,12 +129,12 @@ class PreWorker {
     }
   }
 
-  calcElementInA4PageHeight(elementHeight: number) {
+  calcElementInA4PageHeight(elementHeight) {
     if (!elementHeight) return 0;
     return (A4Width / this.rootWidth) * elementHeight;
   }
 
-  insertElementToContainer(element: HTMLElement) {
+  insertElementToContainer(element) {
     if (!element) return;
     const elementHeight = this.calcElementInA4PageHeight(getElementAttrSize(element, "height"));
 
@@ -107,7 +144,7 @@ class PreWorker {
       this.initA4Container();
     }
     this.remainderHeight -= elementHeight;
-    const cloneElement = cloneNode(element, true);
+    const cloneElement = element.cloneNode(true);
     cloneElement.style.margin = "0";
     this.A4Container.appendChild(cloneElement);
   }
@@ -123,14 +160,14 @@ class PreWorker {
 
 }
 
-function getMultiPagePdf(title: string, rootElement: HTMLElement, skeletonArr: Array<string>) {
-  const exporter: any = new PreWorker(rootElement);
+function getMultiPagePdf(title, rootElement, skeletonArr) {
+  const exporter = new PreWorker(rootElement);
   skeletonArr.forEach(domId => {
     const componentElement = rootElement.querySelector(`#${domId}`);
     exporter.insertElementToContainer(componentElement);
   })
   
-  return Promise.all(exporter.finishInsertElementToContainer()).then((canvas: Array<any>) => {
+  return Promise.all(exporter.finishInsertElementToContainer()).then((canvas) => {
     const pdf = new JsPDF("p", "pt", "a4", true);
     for (let i = 0; i < canvas.length; i++) {
       const contentWidth = canvas[i].width;
@@ -146,4 +183,4 @@ function getMultiPagePdf(title: string, rootElement: HTMLElement, skeletonArr: A
   });
 }
 
-export default { getMultiPagePdf }
+export { getSinglePagePdf, getMultiPagePdf }
