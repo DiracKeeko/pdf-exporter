@@ -1,30 +1,32 @@
+import {
+  Orientation,
+  Unit,
+  Format,
+  JsPdfOptions,
+  isOrientation,
+  isUnit,
+  isFormat,
+} from "@/interface/jsPdf.type";
 
-import { JsPdfOptions } from "@/interface/jsPdf.interface";
+class JsPDF {
+  private orientation: "p" | "portrait" | "l" | "landscape";
+  private unit: "pt" | "px" | "in" | "mm" | "cm" | "ex" | "em" | "pc";
+  private format: string | number[];
+  private compress: boolean;
 
-export class JsPdf {
-  orientation: "p" | "portrait" | "l" | "landscape";
-  unit: "pt" | "px" | "in" | "mm" | "cm" | "ex" | "em" | "pc";
-  format: string | number[];
-  compressPdf: boolean;
+  constructor(options: JsPdfOptions) {
+    this.orientation = isOrientation(arguments[0]) ? arguments[0] : "portrait";
+    this.unit = isUnit(arguments[1]) ? arguments[1] : "px";
+    this.format = isFormat(arguments[2]) ? arguments[2] : "a4";
+    this.compress = arguments[3];
 
-  constructor(
-    options?: JsPdfOptions,
-    orientation?: "p" | "portrait" | "l" | "landscape",
-    unit?: "pt" | "px" | "in" | "mm" | "cm" | "ex" | "em" | "pc",
-    format?: string | number[],
-    compressPdf?: boolean
-  ) {
-    if (options) {
-      const { orientation, unit, format, compressPdf } = options;
-      this.orientation = orientation;
-      this.unit = unit;
-      this.format = format;
-      this.compressPdf = compressPdf;
-    } else {
-      this.orientation = orientation;
-      this.unit = unit;8
-      this.format = format;
-      this.compressPdf = compressPdf;
+    options = options || {};
+
+    if (typeof options === "object") {
+      this.orientation = options.orientation || this.orientation;
+      this.unit = options.unit || this.unit;
+      this.format = options.format || this.format;
+      this.compress = options.compress || this.compress;
     }
   }
 }

@@ -2,7 +2,7 @@ import html2Canvas from "html2canvas";
 import JsPDF from "jspdf";
 
 import { Html2CanvasOptions } from "@/interface/exporter.interface";
-import { JsPdfOptions } from "@/interface/jsPdf.interface";
+import { JsPdfOptions } from "@/interface/jsPdf.type";
 
 const html2CanvasDefaultOption: Html2CanvasOptions = {
   allowTaint: true,
@@ -13,7 +13,7 @@ const html2CanvasDefaultOption: Html2CanvasOptions = {
 };
 
 function getSinglePagePdf(
-  title: string,
+  fileName: string,
   element: HTMLElement,
   scrollYNum?: number
 ): Promise<void | JsPDF> {
@@ -78,7 +78,7 @@ function getSinglePagePdf(
       );
       totalHeight += contentHeight;
     }
-    return pdf.save(`${title}.pdf`);
+    return pdf.save(`${fileName}.pdf`);
   });
 }
 
