@@ -7,10 +7,10 @@ interface Html2CanvasOptions {
 }
 
 interface JsPdfOptions {
-  orientation: string;
-  unit: string;
-  format: string;
-  compress: boolean;
+  orientation?: "p" | "portrait" | "l" | "landscape";
+  unit?: "pt" | "px" | "in" | "mm" | "cm" | "ex" | "em" | "pc";
+  format?: string | number[];
+  compress?: boolean;
 }
 
 export type { Html2CanvasOptions, JsPdfOptions };
