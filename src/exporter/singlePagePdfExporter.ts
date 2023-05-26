@@ -1,10 +1,8 @@
 import html2Canvas from "html2canvas";
 import JsPDF from "jspdf";
 
-import {
-  Html2CanvasOptions,
-  JsPdfOptions,
-} from "@/interface/exporter.interface";
+import { Html2CanvasOptions } from "@/interface/exporter.interface";
+import { JsPdfOptions } from "@/interface/jsPdf.interface";
 
 const html2CanvasDefaultOption: Html2CanvasOptions = {
   allowTaint: true,
@@ -59,7 +57,7 @@ function getSinglePagePdf(
       pageSizeArr = [scrollWidth, 1.4 * scrollWidth];
     }
     const pdfOptions: JsPdfOptions = {
-      orientation: "p",
+      orientation: "portrait",
       unit: "pt",
       format: pageSizeArr,
       compress: true,
