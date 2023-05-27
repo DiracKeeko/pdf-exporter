@@ -11,7 +11,36 @@ interface JsPdfOptions {
   compress?: boolean;
 }
 
-export type { Orientation, Unit, Format, JsPdfOptions, ImageOptions };
+interface PubSub {
+  subscribe(
+    topic: string,
+    callback: (...args: any[]) => void,
+    once?: boolean
+  ): string;
+  unsubscribe(token: string): boolean;
+  publish(topic: string, ...args: any[]): void;
+  getTopics(): Record<
+    string,
+    Record<string, [(...args: any[]) => void, boolean]>
+  >;
+}
+
+interface JsPdfInternal {
+  events: PubSub;
+  scaleFactor: number;
+  collections: Record<string, any>;
+  pages: number[];
+  pageSize: {
+    width: number;
+    getWidth: () => number;
+    height: number;
+    getHeight: () => number;
+  };
+  write: (...args: any[]) => void;
+  getEncryptor(objectId: number): (data: string) => string;
+}
+
+export type { Orientation, Unit, Format, JsPdfOptions, JsPdfInternal };
 
 function isOrientation(orientation: string): orientation is Orientation {
   return ["p", "portrait", "l", "landscape"].includes(orientation);
