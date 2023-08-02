@@ -13,8 +13,8 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getImageBase64Url(element) {
-  const { offsetWidth, offsetHeight } = element;
+async function getImageBase64Url(element, additionalOffsetY = 0) {
+  const { offsetWidth, offsetHeight, offsetTop } = element;
   const canvasWidth = offsetWidth;
   const canvasHeight = offsetHeight;
   const options = {
@@ -22,6 +22,8 @@ async function getImageBase64Url(element) {
     width: canvasWidth,
     height: canvasHeight,
     useCORS: true,
+    scrollY: 0,
+    y: offsetTop + additionalOffsetY,
     allowTaint: true,
     taintTest: false,
     logging: false
@@ -30,9 +32,11 @@ async function getImageBase64Url(element) {
   return canvas.toDataURL("image/jpeg", 1.0);
 }
 
-async function getImage(title, { element, text, logo }) {
+async function getImage(title, { rootElement, element, text, logo, additionalOffsetY = 0 }) {
   try {
-    const imageUrl = await getImageBase64Url(element);
+    const imageUrl = await getImageBase64Url(element, additionalOffsetY);
+
+    const mountElement = rootElement || document.body;
 
     // 创建外层容器元素 <div class="image-export">
     const container = document.createElement("div");
@@ -80,7 +84,7 @@ async function getImage(title, { element, text, logo }) {
     container.appendChild(image);
     container.appendChild(cutline);
     container.appendChild(footer);
-    document.body.appendChild(container);
+    mountElement.appendChild(container);
     await sleep(5);
 
     const { offsetWidth, offsetHeight } = container;
@@ -92,6 +96,8 @@ async function getImage(title, { element, text, logo }) {
       width: canvasWidth,
       height: canvasHeight,
       useCORS: true,
+      scrollY: 0,
+      y: container.offsetTop + additionalOffsetY,
       allowTaint: true,
       taintTest: false,
       logging: false
@@ -101,7 +107,7 @@ async function getImage(title, { element, text, logo }) {
     const link = document.createElement("a");
     link.href = imgUrl;
     link.download = title;
-    document.body.removeChild(container);
+    mountElement.removeChild(container);
     link.click();
   } catch (err) {
     console.log(err);
